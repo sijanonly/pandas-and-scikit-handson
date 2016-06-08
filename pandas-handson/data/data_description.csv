@@ -1,0 +1,57 @@
+,*This dataset contains self-reported information. May contain meaningless/misspelled/mistyped entries.,,
+,Input,Description,Comments
+,Train/Test,Whether the data belongs to the train set or test set,
+,ID,A unique ID to identify a candidate,
+,DEPENDENT VARIABLES,,
+,Salary,Annual CTC offered to the candidate (in INR),
+,DOJ,Date of joining the company,Candidates may not have accurately entered information.
+,DOL,Date of leaving the company,"A value of ""present"" means the candidate continues to work at the company at the time of collecting this information"
+,Designation,Designation offered in the job,
+,JobCity,City in which the candidate is offered the job,
+,INDEPENDENT VARIABLES,,
+,Gender,Candidate's gender,m denotes Males and f denotes Females
+,DOB,Date of birth of candidate,
+,10percentage,Overall marks obtained in grade 10 examinations,"Domain of values: [0,100]"
+,10board,The school board whose curriculum the candidate followed in grade 10,India has several boards of education which follow their own course curricula. Schools are affiliated to one of these boards. More information here - https://en.wikipedia.org/wiki/Boards_of_Education_in_India
+,12graduation,Year of graduation - senior year high school,
+,12percentage,Overall marks obtained in grade 12 examinations,"Domain of values: [0,100]"
+,12board,The school board whose curriculum the candidate followed,
+,CollegeID,Unique ID identifying the university/college which the candidate attended for her/his undergraduate,Multiple candidates may belong to the same university/college in this dataset. College names have not been disclosed to maintain privacy.
+,CollegeTier,Each college has been annotated as 1 or 2. The annotations have been computed from the average AMCAT scores obtained by the students in the college/university. Colleges with an average score above a threshold as tagged as 1 and others as 2.,
+,Degree,Degree obtained/pursued by the candidate,"Relevant information here - 
+* https://en.wikipedia.org/wiki/Bachelor%27s_degree#India
+* https://en.wikipedia.org/wiki/Bachelor_of_Engineering#India
+* https://en.wikipedia.org/wiki/Bachelor_of_Technology#India"
+,Specialization,Specialization pursued by the candidate,Some information here - https://en.wikipedia.org/wiki/Bachelor_of_Engineering#India
+,CollegeGPA,Aggregate GPA at graduation,"This is the raw information submitted by candidates. Some have submitted percentages while others have posted on a 10-point scale.
+Some of these GPAs might be relative while others can be absolute. "
+,CollegeCityID,A unique ID to identify the city in which the college is located in.,
+,CollegeCityTier,The tier of the city in which the college is located in. This is annotated based on the population of the cities.,
+,CollegeState,Name of the state in which the college is located,The provided data set does not accurately capture state-wise distributions.
+,GraduationYear,Year of graduation (Bachelor's degree),
+,English,Scores in AMCAT English section,"AMCAT or Aspiring Minds Computer Adaptive Test is an employability assessment test to assess the aptitude, reasoning and technical skills of students and new graduates. It is a statistical assessment platform to provide the skill measurements for each student who takes up the test. The assessments focus on three primary skills – cognitive (which include tests like English ability, Logical ability, Quantitative ability, Attention to detail), domain (which includes a test on the specific branch of studies taken up by the student) and personality (based on the big-5 personality traits).
+The scores are measured and reported on a scale of 100-900 (barring the personality assessments).
+For more details, see: 
+Link1: aspiringminds.com 
+Link2: research.aspiringminds.com"
+,Logical,Score in AMCAT Logical ability section,
+,Quant,Score in AMCAT's Quantitative ability section,
+,Domain,Scores in AMCAT's domain module,"Since different candidates give different domain-specific tests, we report here the percentile of the candidates in their respective tests. The scores are reported on a scale of 0-1.
+
+This is an optional section for the candidates. Those opting out of it get a score of -1.  One may consider this as missing data.
+Aspiring Minds provides an internal map which relates a student's specialization to particular AMCAT tests.
+In case the score is -1 for this test, you could make use of the scores in the tests mentioned below to get more information. If the scores in the tests below are -1 as well, then it can be concluded that the candidate has not given a module listed here."
+,ComputerProgramming,Score in AMCAT's Computer programming section,This is an optional section for the candidates. Those opting out of it get a score of -1.  One may consider this as missing data.
+,ElectronicsAndSemicon,Score in AMCAT's Electronics & Semiconductor Engineering section,This is an optional section for the candidates. Those opting out of it get a score of -1.  One may consider this as missing data.
+,ComputerScience,Score in AMCAT's Computer Science section,This is an optional section for the candidates. Those opting out of it get a score of -1.  One may consider this as missing data.
+,MechanicalEngg,Score in AMCAT's Mechanical Engineering section,This is an optional section for the candidates. Those opting out of it get a score of -1.  One may consider this as missing data.
+,ElectricalEngg,Score in AMCAT's Electrical Engineering section,This is an optional section for the candidates. Those opting out of it get a score of -1.  One may consider this as missing data.
+,TelecomEngg,Score in AMCAT's Telecommunication Engineering section,This is an optional section for the candidates. Those opting out of it get a score of -1.  One may consider this as missing data.
+,CivilEngg,Score in AMCAT's Civil Engineering section,This is an optional section for the candidates. Those opting out of it get a score of -1.  One may consider this as missing data.
+,conscientiousness,Scores in one of the sections of AMCAT's personality test,"For a clarity on what the traits mean on which the scores are reported, see https://en.wikipedia.org/wiki/Big_Five_personality_traits
+
+The scores are sampled from a distribution with mean 0 and standard deviation 1 "
+,agreeableness,Scores in one of the sections of AMCAT's personality test,
+,extraversion,Scores in one of the sections of AMCAT's personality test,
+,nueroticism,Scores in one of the sections of AMCAT's personality test,
+,openess_to_experience,Scores in one of the sections of AMCAT's personality test,
