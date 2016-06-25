@@ -43,4 +43,14 @@
 
 ### Machine learning has been classified as 'Supervised' and 'Unsupervised'. Classification and Regression are two major parts supervised learning. Whereas Clustering, Dimension reduction are taken as unsupervised learning.
 
-### Simple remember, classification helps to predict discrete output whereas regression gives continuous output.
+### Simply remember, classification helps to predict discrete output whereas regression gives continuous output.
+
+#### Some More examples
+
+##### Examples on Classification
+	##### 1. predicting whether a stock's price will rise or fall
+	##### 2. deciding if a news article belongs to the politics or economic sections
+
+##### Examples of Clustering
+	##### 1. from a given collection of movie reviews, get a group of positive and negative reviews
+	##### 2. determine segments of customers within a market for a product
