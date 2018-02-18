@@ -1,27 +1,40 @@
 
-Sentiment analysis has been using as a tool to cassify response from your user/customer as 'positive' or 'negative' or even 'neutral'.
+Sentiment analysis has been using as a tool to cassify response from your user/customer as 'positive' or 'negative' or even 'neutral'. It combines two different disciplines : Natural Language Processing and Text Analysis to extract information from text data. In sentiment analysis, algorithm will learn from labelled example data and predict the label of new /unseen data points. This approach is called supervised learning, as we will train our model with corpus of labelled news.
+
+### Why sentiment analysis?
+
+People have different ways to express their attitudes or opinions / reviews towards your product /event / movie or even for people. These user reviews have potential to build brand authenticity between customers and even to establish trust in product.Most of the companies are trying to evaluate the brand value of a product based on customer reviews. In this process, company can extract customer behaviors like : which products are popular among users, what percentage of your customer dislike your brand, how many users have postive sentiment on their competitors product? These questions ultimately help companies to focus on different aspects of product like : product revamp , new marketing strategy and even for social media outreach plan.
 
 Before use of sentiment analysis algorithms, people were trying to evaluate those user response based on simple practices like : extracting keywords from the content and restricting their findings only on 'what people are talking about?'.
 This will never helps you out to answer few important questions 'What people are feeling and thinking about your product?'. That means only the explicit statements/reviews or opinions will have measurable output with your old approach. What would you do with large number of implicit comments?
 
 Even though, it is extremely arduous to determine the actual tone from given text, we can try to develop a more accurate version of our older one.
 
-In the following blog, I am going to help you to understand the basic norms natural language processing in order solve the problem of sentiment analysis. I have divided the whole content into following sub-topics:
+### What tools we are using?
+
+ - Language : python
+ - Scraping library : BeautifulSoup
+ - Machine learning library : scikit-learn 
+ - Data wrangling : Pandas and Numpy
+ - Plotting : matplotlib
+
+
+In the following blog, I am going to help you to understand the basic norms of natural language processing in order solve the problem of sentiment analysis. I have divided the whole content into following sub-topics:
 		1. Problem Statement
 		2. Problem Analysis
-		2. Data Collection
-		3. Model Development
-		4. Analysis
+		3. Data Collection
+		4. Model Development
+		5. Analysis
 
 ####  Problem Statement:
 
 Though there are lots of challenges out there that can be solved using data science, I come up with a very basic problem. Why I am choosing this -- simply because I do not want to waste my energy just by thinking about big problems and also not to waste your energy to read it and forget in couple of hours :). 
 
-PROBLEM: We have to classify the sentiment of news titles (Whether positive or negative.)
+PROBLEM: We will classify the sentiment of news titles (Whether positive or negative or neutral.)
 
 #### Problem Analysis:
 
-For this part, you should be able to answer following questions:
+For this part, we will answer following questions:
 	   1. What will be the input for your program?
 	   2. What output you are expecting ?
           Whether it is continous value (something like given by regression model?) or   it is a label value (like spam or ham?)
@@ -793,6 +806,21 @@ pd.DataFrame(sample_train_tfidf.toarray(), columns=tfidf_vec.get_feature_names()
 
 
 
+Let us discuss few questions regarding feature engineering.
+
+#### Why do you need to vectorize the words?
+ - Raw text data can not be directly fed into machine learning model. So, text to vector conversion PIPE-line consists of following process:
+
+    * Tokenization : When we convert our text into list of words by removing stop words and punctuations, we assign individual string an id value.
+     
+    * Frequency counting :  We count the occurence of individual token into each of the document.
+    * Normalizing :  We reduce the importance of token having frequent occurence in majority of documents by giving it lower weight.
+
+  At the end, the token occurrene frequency is our feature for the model.reated as a feature.
+  
+####  Why do you need to do data standardization?
+   - 
+
 ### C. Choose estimator
 
 I will be using `SVM` as my estimator. We will not talk details on SVM because it might take long hours to understand the algorithms.
@@ -942,7 +970,7 @@ test.tail(5)
 
 
 
-#### F. Prediction of unseen data
+#### E. Prediction of unseen data
 
 
 ```python
@@ -1025,7 +1053,16 @@ output.head(5)
 
 
 
-#### D. Model Evaluation
+### Analysis
+
+#### Model Evaluation
+
+There are different appoaches evaluating for model performance and error analysis. And, this particularly depends upon type of problem we are solving. Since our problem falls under classification, we need to identify which class defines positive result and which one negative. In our case, we assume that predicting 'positive' class is a positive result. 
+If our model is predicting input text as 'positive' and it really has 'positive' label in test data, then it is called True positive. Why True Positive? 'True' because the real class of the input data matched the prediction, and 'Positive' as we have assumed predicting 'positive' is Postive result above.
+On the other hand, if our model predicted an input text as 'positive' though it is 'negative' in real, it is called False Positive. 'False' because the real class of the input data did not match with the predicted value, and 'Positive' as prediction 'positve' class matched our assumption above.
+
+While deriving model performance and error analysis, we should always consider test data. Using training data will not make much sense as our model will be baised to give the actual prediction.
+
 
 ##### i. Accuracy
   - It measures percentage of correct predictions .i.e the number of correct predictions
@@ -1105,7 +1142,7 @@ plt.show()
 ```
 
 
-![png](sentiment_analysis_files/sentiment_analysis_46_0.png)
+![png](sentiment_analysis_files/sentiment_analysis_48_0.png)
 
 
 
@@ -1125,9 +1162,76 @@ TP = True positive , FN = False Negative,
 #### Precision
 ##### -  Out of 225 (168 + 57) predicted positive labels, only 168 are real positives.
  i.e precision = 168 /225 = 0.746 (TP/(TP+FP))
-  -  Precision measures the ability of the classifier not to mark a negative data point  as positive.
+  -  It simply measures the proportion of correct positive predictions out of all positive predictions made by our model.
 
-iv. Hypterparamter tuning
+iv. Overfitting and Underfitting:
+
+In order to identify the poorness of our model, observing model fit is crucial. The very basic approach to determine overfitting or underfitting of our model is by plotting prediction error on the training data and test data.
+
+
+If our model performs better on the training data and does poorly on test set, it means our model is memorizing the training data pattern but unable to fit or genaralize unseen data. This phenonemon of perfect fit on training data is called overfitting. This is the case when our model too complex. For example, if we are using polynomial model of degree 6, it will try to fit your training data perfectly. It seems polynomial model is a good choice for your actual data distribution, but it may try to remember every data points rather than capturing true pattern. In this scenario, if you add extra points (more training data), your model will be extra flattened. In other word, it will follow the data movement rather than data pattern. If you plot prediction error on training and test data, and the curves are far from each other then it is overfitting.
+
+The very basic approach would be plotting learning curve to see the behaviour of model with increasing training sample size. If we see that the cap between traiining error and validation error is about to close with inreasing training size, we need to collect more training data.
+Another solution would be looking for simpler classifier. If you have small dataset, choosing simple model always prevent overfitting. 
+
+On the other hand, there might be a case where our model don't even capture the patterns from training data. That means even performing poorly in training set. This is called underfitting. In the plot, if the curves are close enough, it shows symptoms of underfitting. This can be minimized by using more complex model / using more features for model development.
+
+v. Cross Validation
+
+Cross Validation is a tool to assess the predictive performance of our model. During training, we only fit our train data and look at the model performance of model in our in-sample data alone. Using cross validation, we are trying to observe the model behaviour in new data in terms of accuracy. There are different approaches for computing cross validation.
+
+Holding some subset of data from our training samples and finally using this set to evaluate the model performace is one of the approach. This is what we did above using `train_test_split`.
+
+But, this approach is not optimal. Here, only a certain portion of data contribute for model development. This can be migiated by using cross-validation - running sequence of fits on the model using subsets which act as both training  and validation set. We used `cross_val_score` to achieve this. `cross_val_score` uses StratifiedKFold to creates k folds of data then compute accuracy in individual run.
+
+
+vi.Validation Curve
+
+Validation curve is plotted in order to observe the model performance in terms of model complexity. Here, we try to vary a parameter which contributes to control model complexity (in our case - 'Gamma') and calculates the error on both training and test data.
+
+
+
+```python
+x = news_classifier.train_vectors
+y = news_classifier.train_labels
+# Create a gamma values from 10^-6 to 10^0.5 with 20 equally spaced intervals
+param_range = np.logspace(-6, 0.5, 20)
+train_scores, validation_scores = validation_curve(
+    svm.SVC(kernel='rbf', class_weight="balanced"), x, y,
+    param_name='gamma',
+    param_range=param_range, cv=10)
+
+# Calculate mean for training and test set scores
+train_scores_mean = np.mean(train_scores, axis=1)
+test_scores_mean = np.mean(validation_scores, axis=1)
+
+
+# Plot the mean train score and validation score
+plt.plot(param_range, test_scores_mean, label='cross-validation')
+plt.plot(param_range, train_scores_mean, label='training')
+
+# Create plot
+plt.title("Validation Curve With SVM")
+plt.xlabel("$\gamma$")
+plt.ylabel("Accuracy Score")
+plt.tight_layout()
+plt.legend(loc="best")
+plt.show()
+
+```
+
+<img src="validation_curve.png">
+
+In the plot above:
+1. The training score is improving with increased model complexity and is higher than validation score. This means our model is performing better with training set but not with test data.
+2. On the left side of the curve (lower gamma values - lower model complexity - a high-bias), both training and validation scores are minimal. This means model is not performing good for both the training and test set. This is called underfitting.
+
+3. Right side of the curve ( higher model complexity - a high-variance) shows over-fit. This means the model can perform better with training data but fails to predict unseen data.
+
+4. For an intermediate value of Gamma, both scores have maximum value. This level of model complexity shows the optimal trade-off between bias and variance.
+
+
+vii. Hypterparamter tuning
   - Until now, we are looking at training data to measure the accuracy of our model.
     But, there are also other parameters which are not the part of model
     training process. These parameters are called `hyperparameters`,
@@ -1174,10 +1278,12 @@ plot_learning_curve(
 
 <img src="learningcurve.png">
 
- - In the figure, we can see that validation score increases with growing training instances, while the training score remains constant with a growing training sets. 
- - Here, increasing training set size will obviously increase the validation score.
+ - In the figure, we can see that training score attends maximum value regardless of increasing size of training data. 
+ - Also, validation score increases with growing training instances
  - So, it can be concluded that 'rbf' kernel is a high variance estimator which over-fits our data. This high variance model can be improved by adding more training samples.
 
+
+In my opinion, sentiment analysis can not be totally derived from concrete science as we are dealing with emotions and feelings of people. The best observation could be testing whether our classifier is good to predict correct output in unseen data set. And, at the same time, the selection of best classifier depends upon your need as well. For example, you are developing a model to classify patients cancer diagnosis report. Here, if you model happens to have higher False Positive value (means you model is saying that patient have cancer when they do not), it is a critical issue. In such case, you should look for a better model, try to use different classifier with different parameters for your test data, and figure out the best one.s
 
 
 ```python
