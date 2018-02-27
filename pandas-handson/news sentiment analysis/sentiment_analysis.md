@@ -170,7 +170,7 @@ pd.set_option('display.max_colwidth', -1)
 from sklearn.model_selection import train_test_split
 
 data = pd.read_csv(
-    'news_corpus/kantipur.csv',names=['text', 'label'],
+    'news_corpus/data.csv',names=['text', 'label'],
     dtype={'label': object})
 data.head(5)
 
@@ -204,27 +204,27 @@ data.head(5)
   <tbody>
     <tr>
       <th>0</th>
-      <td>Petrol bomb thrown at Suu Kyi’s villa, no injuries</td>
-      <td>-1</td>
+      <td>Business growth in euro zone rises to 32-month high</td>
+      <td>1</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>2 Nepalis killed in India road accident</td>
+      <td>Fed official says weak data caused by weather, should not slow taper</td>
       <td>-1</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>Province 3 Assembly meet concludes, sets date for Speaker election</td>
-      <td>0</td>
+      <td>Forex - Pound drops to one-month lows against euro</td>
+      <td>-1</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>Ton-up Malla hands Nepal second win</td>
-      <td>1</td>
+      <td>Europe reaches crunch point on banking union</td>
+      <td>0</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>Shaktikhor industrial park begins DPR prep</td>
+      <td>10 Things You Need To Know This Morning</td>
       <td>0</td>
     </tr>
   </tbody>
@@ -244,7 +244,7 @@ data['label'].unique()
 
 
 
-    array(['-1', '0', '1'], dtype=object)
+    array(['1', '-1', '0'], dtype=object)
 
 
 
@@ -383,8 +383,6 @@ pd.DataFrame(sample_train_dtm.toarray(), columns=vec.get_feature_names())
 ```
 
 
-
-
 <div>
 <style>
     .dataframe thead tr:only-child th {
@@ -503,7 +501,6 @@ pd.DataFrame(sample_train_dtm.toarray(), columns=vec.get_feature_names())
 </table>
 <p>3 rows × 21 columns</p>
 </div>
-
 
 
 You can see that most of the feature values are `ZEROs`. Why is that? Because most of the documents can be represented by small sets of words. Suppose, you have collected almost 100 reviews (documents) from a site. Then, there could be all together 1000 unique words (corpus) and a single review (single document) might have 10 unique words. right?
@@ -860,17 +857,11 @@ class NewsClassification:
         self.model = svm.SVC(kernel='linear', class_weight="balanced")
         self.model.fit(self.train_vectors, self.train_labels)
 
-        # let's save our model using pickle.
-        # we will using this model later for unseen data as well.
-        data_struct = {'vectorizer': self.vectorizer, 'model': self.model}
-        with open('%s.bin' % 'linear', 'wb') as f:
-            pickle.dump(data_struct, f)
-
 
 if __name__ == '__main__':
     news_classifier = NewsClassification()
     data = pd.read_csv(
-        'news_corpus/kantipur.csv',
+        'news_corpus/data.csv',
         names=['text', 'label'], dtype={'label': object})
 
     data = data[data['label'].map(len) <= 2]
@@ -887,12 +878,103 @@ if __name__ == '__main__':
     
 ```
 
-#### D. Prediction with test data
+#### D. Cross Validation
+
+Cross Validation is a tool to assess the predictive performance of our model. During training, we only fit our train data and look at the model performance of model in our in-sample data alone. Using cross validation, we are trying to observe the model behaviour in new data in terms of accuracy. There are different approaches for computing cross validation.
+Holding some subset of data from our training samples and finally using this set to evaluate the model performace is one of the approach. This is what we did above using train_test_split.
+But, this approach is not optimal. Here, only a certain portion of data contribute for model development. This can be migiated by using cross-validation - running sequence of fits on the model using subsets which act as both training and validation set. We used cross_val_score to achieve this. cross_val_score uses StratifiedKFold to creates k folds of data then compute accuracy in individual run.
+
+The very basic approach is  k-fold cross validation.Here, the training set is split into k folds. And, for each of the k folds:
+    1. Model training is done in k-1 of the folds as training data
+    2. The trained model is validated against remaining part of the data.
+
+Cross validation can be used for different purposes:
+        1. Cross Validation for model selection
+        2. Cross Validation for Paramters tuning (Hyperparameters)
+        3. Cross Validation for feature selection
+        
+
+
+#### D.1 Cross Validation for model selection
+We would like to see whether Naive Bayes classifier or SVM is suitable for our data.
+
+
+```python
+from sklearn.model_selection import cross_val_score
+# cross validation score for Naive Bayes Classifier
+from sklearn.naive_bayes import MultinomialNB
+nb = MultinomialNB()
+print(cross_val_score(nb, news_classifier.train_vectors,
+        news_classifier.train_labels, cv=10, scoring='accuracy').mean())
+
+```
+
+    0.71135591129
+
+
+
+```python
+# cross validation score for SVM
+svm_model = svm.SVC(kernel='linear')
+print(cross_val_score(svm_model, news_classifier.train_vectors,
+        news_classifier.train_labels,cv=10, scoring='accuracy').mean())
+```
+
+    0.73772542533
+
+
+##### We saw that SVM is performing better than Naive Bayes classifier
+
+#### D.2 Cross Validation for Paramters tuning
+
+Until now, we are looking at training data to measure the accuracy of our model. But, there are also other parameters which are not the part of model training process. These parameters are called hyperparameters, which defines areas like - the complexity of model and how fast the model should learn. So, Hyperparameters can be defined as knobs or levels we fed for model building. 
+On the other hand, model parameters are the properties that are learnt during training by the model. For example, if we are looking for Natural Lanuage processing model: word frequency, sentence length or n-grams per word are Model parameters.
+During model development, we try to optimize model parameters looking into the performance of some loss function whereas optimizing hyperpameters is handled by investigatin various settings of the parameter values and located only after we observe the model accuracy. 
+In this process, we will observe variations of SVM hyper-parameters "kernel”, "gamma" and "C" in order to get best model performing values.
+
+
+GridSearchCV splits your given data input into Train and CV set and train algorithm with train set searching for the best hyperparameters using the CV set.
+
+
+```python
+import numpy as np
+from sklearn.grid_search import GridSearchCV
+
+
+param_grid = [
+  {'C': [0.01, 0.1, 1, 10, 100], 'kernel': ['linear']},
+  {'C': [0.01, 0.1, 1, 10, 100], 'gamma': np.logspace(-3, 2, 20), 'kernel': ['rbf']},
+ ]
+
+clf = GridSearchCV(svm.SVC(), param_grid,  cv=10,)
+clf = clf.fit(news_classifier.train_vectors, news_classifier.train_labels)
+print("Best estimator found by grid search:")
+print(clf.best_estimator_)
+```
+
+
+```python
+# Best parameters for the model found using grid search
+print('Best C:',clf.best_estimator_.C) 
+print('Best Kernel:',clf.best_estimator_.kernel)
+print('Best Gamma:',clf.best_estimator_.gamma)
+```
+
+    Best C: 1
+    Best Kernel: linear
+    Best Gamma: auto
+
+
+
+
+#### E. Prediction with test data
 
 
 ```python
 # let's run prediction with our test data
-prediction = news_classifier.model.predict(news_classifier.test_vectors)
+# Predict new data with model loaded from disk
+prediction = clf.best_estimator_.predict(news_classifier.test_vectors)
+# prediction = news_classifier.model.predict(news_classifier.test_vectors)
 
 test['prediction'] = prediction
 
@@ -935,33 +1017,33 @@ test.tail(5)
   </thead>
   <tbody>
     <tr>
-      <th>3173</th>
-      <td>Spritz text streaming technology increases reading speed</td>
+      <th>1792</th>
+      <td>Honda splits Acura into its own division to revitalize brand</td>
       <td>1</td>
       <td>1</td>
     </tr>
     <tr>
-      <th>1680</th>
-      <td>I must say I have taped most of the episodes and i find myself watching them over and over again.</td>
-      <td>1</td>
+      <th>12656</th>
+      <td>Low Quality.</td>
+      <td>-1</td>
       <td>-1</td>
     </tr>
     <tr>
-      <th>1373</th>
-      <td>LASANAA’s latest art residency concludes with an exhibit</td>
-      <td>1</td>
-      <td>1</td>
+      <th>9941</th>
+      <td>Titanfall on Xbox One: Frame-Rate Is Uneven, Struggles A Lot Even At 792p  ...</td>
+      <td>-1</td>
+      <td>-1</td>
     </tr>
     <tr>
-      <th>814</th>
-      <td>Indian envoy Puri calls on PM Deuba</td>
+      <th>6939</th>
+      <td>Colorado made $3.5m 'pot' tax in January</td>
       <td>0</td>
       <td>0</td>
     </tr>
     <tr>
-      <th>2681</th>
-      <td>Stock futures down slightly; Coca-Cola cuts executive pay; Chiquita top banana  ...</td>
-      <td>-1</td>
+      <th>11696</th>
+      <td>Great pork sandwich.</td>
+      <td>1</td>
       <td>1</td>
     </tr>
   </tbody>
@@ -970,88 +1052,12 @@ test.tail(5)
 
 
 
-#### E. Prediction of unseen data
+
 
 
 ```python
-# let's run our model against news titles that we scraped before
-with open('linear.bin', 'rb') as model_file, open('news_corpus/setopati.csv', 'r') as data_file:
-        data_struct = pickle.load(model_file)
-        vectorizer, model = data_struct['vectorizer'], data_struct['model']
 
-        reader = data_file.readlines()
-        data = [row.replace('\n', '') for row in reader]
-
-        # vectorize the raw data
-        new_data_vectors = vectorizer.transform(data)
-        predictions = model.predict(new_data_vectors)
-
-values = pd.Series(['positive' if prediction ==
-                    '1' else 'negative' if prediction ==  '-1'
-                    else 'neutral' for prediction in predictions])
-output = pd.DataFrame()
-output['text'] = data
-output['sentiment'] = values
-pd.set_option('display.max_colwidth', -1)
-output.head(5)
 ```
-
-
-
-
-<div>
-<style>
-    .dataframe thead tr:only-child th {
-        text-align: right;
-    }
-
-    .dataframe thead th {
-        text-align: left;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>text</th>
-      <th>sentiment</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>VP Pun stresses on making 21st century as SAARC era</td>
-      <td>positive</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>Oli, Swaraj have 45-min one-on-one meeting at Soaltee</td>
-      <td>negative</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>Kenya’s High Court orders government’s TV shutdown to end</td>
-      <td>neutral</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>UML directs its National Assembly voters not to leave country, provinces until election</td>
-      <td>negative</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>Swaraj arrives in Kathmandu</td>
-      <td>neutral</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
 
 ### Analysis
 
@@ -1070,34 +1076,34 @@ While deriving model performance and error analysis, we should always consider t
 
 
 ```python
-from sklearn import metrics
-print(metrics.accuracy_score(news_classifier.test_labels, prediction))
+print(clf.best_estimator_.score(
+        news_classifier.test_vectors, news_classifier.test_labels))
 
 ```
 
-    0.669738863287
+    0.731187122736
 
-
-ii. Cross validation accuracy
-   -  `cross_val_score` splits the data into say 10 folds. And, it fits with 9 folds into your model and find scores with 10th fold data. Then it gives you the 10 scores from which you can calculate a mean for average score of total folds.
 
 
 ```python
-from sklearn.model_selection import cross_val_score
-results_svm_cv = cross_val_score(
-        news_classifier.model,
-        news_classifier.train_vectors,
-        news_classifier.train_labels,
-        cv=10, scoring='accuracy')
-print(results_svm_cv.mean())
+# let's also look at the best score for training data derived from cross validation
+
+print(clf.best_estimator_.best_score_)
 ```
 
-    0.681921762611
+    0.899859098229
 
+
+
+
+
+```python
+
+```
 
 ####  NOTE : Test data accuracy is near to cross validation accuracy.
 
-##### iii. Confusion Matrix
+##### ii. Confusion Matrix
   - This matrix helps you to understand the types of errors made by our classifier.
 
 
@@ -1142,7 +1148,7 @@ plt.show()
 ```
 
 
-![png](sentiment_analysis_files/sentiment_analysis_48_0.png)
+![png](sentiment_analysis_files/sentiment_analysis_58_0.png)
 
 
 
@@ -1164,7 +1170,7 @@ TP = True positive , FN = False Negative,
  i.e precision = 168 /225 = 0.746 (TP/(TP+FP))
   -  It simply measures the proportion of correct positive predictions out of all positive predictions made by our model.
 
-iv. Overfitting and Underfitting:
+iii. Overfitting and Underfitting:
 
 In order to identify the poorness of our model, observing model fit is crucial. The very basic approach to determine overfitting or underfitting of our model is by plotting prediction error on the training data and test data.
 
@@ -1176,16 +1182,8 @@ Another solution would be looking for simpler classifier. If you have small data
 
 On the other hand, there might be a case where our model don't even capture the patterns from training data. That means even performing poorly in training set. This is called underfitting. In the plot, if the curves are close enough, it shows symptoms of underfitting. This can be minimized by using more complex model / using more features for model development.
 
-v. Cross Validation
 
-Cross Validation is a tool to assess the predictive performance of our model. During training, we only fit our train data and look at the model performance of model in our in-sample data alone. Using cross validation, we are trying to observe the model behaviour in new data in terms of accuracy. There are different approaches for computing cross validation.
-
-Holding some subset of data from our training samples and finally using this set to evaluate the model performace is one of the approach. This is what we did above using `train_test_split`.
-
-But, this approach is not optimal. Here, only a certain portion of data contribute for model development. This can be migiated by using cross-validation - running sequence of fits on the model using subsets which act as both training  and validation set. We used `cross_val_score` to achieve this. `cross_val_score` uses StratifiedKFold to creates k folds of data then compute accuracy in individual run.
-
-
-vi.Validation Curve
+iv.Validation Curve
 
 Validation curve is plotted in order to observe the model performance in terms of model complexity. Here, we try to vary a parameter which contributes to control model complexity (in our case - 'Gamma') and calculates the error on both training and test data.
 
@@ -1197,7 +1195,7 @@ y = news_classifier.train_labels
 # Create a gamma values from 10^-6 to 10^0.5 with 20 equally spaced intervals
 param_range = np.logspace(-6, 0.5, 20)
 train_scores, validation_scores = validation_curve(
-    svm.SVC(kernel='rbf', class_weight="balanced"), x, y,
+    svm.SVC(kernel='rbf'), x, y,
     param_name='gamma',
     param_range=param_range, cv=10)
 
@@ -1231,36 +1229,13 @@ In the plot above:
 4. For an intermediate value of Gamma, both scores have maximum value. This level of model complexity shows the optimal trade-off between bias and variance.
 
 
-vii. Hypterparamter tuning
-  - Until now, we are looking at training data to measure the accuracy of our model.
-    But, there are also other parameters which are not the part of model
-    training process. These parameters are called `hyperparameters`,
-    which defines areas like - the complexity of model and how fast
-    the model should learn.
-    So as to select best parameters, we simply set different values for each of 
-    the hyperparamters and decide which combination gives the best result.
+
 
 
 
 ```python
 
-from sklearn.grid_search import GridSearchCV
-param_grid = {
-        'C': [0.01, 0.1, 1, 10, 100],
-        'kernel': ['rbf', 'linear'],
-        'gamma': np.logspace(-3, 2, 20)}
-clf = GridSearchCV(svm.SVC(class_weight='balanced'), param_grid)
-clf = clf.fit(news_classifier.train_vectors, news_classifier.train_labels)
-print("Best estimator found by grid search:")
-print(clf.best_estimator_)
 ```
-
-    Best estimator found by grid search:
-    SVC(C=10, cache_size=200, class_weight='balanced', coef0=0.0,
-      decision_function_shape='ovr', degree=3, gamma=0.78475997035146072,
-      kernel='rbf', max_iter=-1, probability=False, random_state=None,
-      shrinking=True, tol=0.001, verbose=False)
-
 
 v. Learning curve
  - Learning curve depicts the behavior of model while increasing the number of train data points.
@@ -1271,7 +1246,7 @@ v. Learning curve
 title = 'Learning Curve : (SVM, linear kernel, $\gamma=%.4f$)' % clf.best_estimator_.gamma
 estimator = svm.SVC(kernel='rbf', gamma=clf.best_estimator_.gamma, C = 10)
 plot_learning_curve(
-    estimator, title, news_classifier.train_vectors,
+    clf.best_estimator_, title, news_classifier.train_vectors,
     news_classifier.train_labels,
     cv=10)
 ```
